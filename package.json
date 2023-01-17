@@ -2,7 +2,7 @@
   "name": "user-authenticate-implement-with-node-js",
   "version": "1.0.0",
   "description": "",
-  "main": "server.js",
+  "main": "node server.js",
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js"
