@@ -7,7 +7,7 @@ const userSchema = new mongoose.Schema({            //* <-- Yah hai Database Obj
     age:{type:Number,required:true},
     password:{type:String, required:true,trim:true},
     date:{ type: Date, default:Date.now},
-    tc:{type:Boolean, required:true}
+    tc:{type:Boolean, default:true}
 });
 
 

@@ -20,17 +20,17 @@ var checkUserAuth = async(req,resp,next)=>{    //* <-- Iska kaam hai yah  ( Fron
          const {userID} = jwt.verify(token,process.env.JWT_SECRET_KEY)   //* User Token Verify & check
         
 
-         req.user = await UserModel.findById(userID).select('-password')  //* Find User Id
+         req.user = await UserModel.findById(userID).select('-password')  //* Find User Id   or  (select('-password') yah Dene sa password chhodka  sab send karega )
         
          next()
          
        } catch (error) {
         console.log(error)
-        resp.send({"status":"failed","message":"Unauthorized User"})
+        resp.json({"status":"failed","message":"Unauthorized User"})
        }
     }
     if(!token){
-        resp.status(401).send({"status":"failed","message":"Unauthorized User No Token"})
+        resp.status(401).json({"status":"failed","message":"Unauthorized User No Token"})
     }
 
 

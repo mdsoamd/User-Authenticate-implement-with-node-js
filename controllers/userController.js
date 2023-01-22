@@ -15,15 +15,16 @@ class userController {
     static userRegistration = async (req,resp) =>{
 
        //* req provide user data
-        const {name, email,phone,age,password,password_confirmation,tc} = req.body
+       const {name, email,phone,age,password,password_confirmation,tc} = req.body
+       // const {name, email,password,password_confirmation} = req.body
 
         const user = await UserModel.findOne({email:email});   //* <-- User Find Database this code
 
         if(user){
-            resp.status(422).send({"status":"failed","message":"Email already exists"})
+            resp.status(422).json({"status":"failed","message":"Email already exists"})
         }else{
              
-            if(name && email &&  phone && age && password && password_confirmation){
+            if(name && email && phone && age && password && password_confirmation){
 
                 if(password === password_confirmation){
 
@@ -35,9 +36,11 @@ class userController {
                         //* User Data add Database
                         const doc = new UserModel({
                             name:name,
-                            email:email,
-                            phone:phone,
-                            age:age,
+                            email:email, 
+                            phone:Number.parseInt(phone),
+                            age:Number.parseInt(age),
+                            // phone:phone,
+                            // age:age,
                             password:hashPassword,
                             tc:tc
                         })
@@ -50,19 +53,19 @@ class userController {
                        const token = jwt.sign({userID:saved_user._id},process.env.JWT_SECRET_KEY,{expiresIn:"30d"});
                         
                         
-                        resp.status(201).send({"status":"success","message":" Register Successfully","token":token})
+                        resp.status(201).json({"status":"success","message":" Register Successfully","token":token})
 
                     }catch(err){
                         console.log(err);
-                        resp.status(500).send({"status":"failed","message":"Unable to Register"})
+                        resp.status(500).json({"status":"failed","message":"Unable to Register"})
                     }
                    
                 }else{
-                   resp.status(422).send({"status":"failed","message":"password and Confirm password doesn't match"})
+                   resp.status(422).json({"status":"failed","message":"password and Confirm password doesn't match"})
                 }
                  
             }else{
-                resp.status(422).send({"status":"failed","message":"All fielde are required "})
+                resp.json({"status":"failed","message":"All fielde are required "})
             }
         }
     }
@@ -103,24 +106,24 @@ class userController {
                      //* generate JWT token
                      const token = jwt.sign({userID:user._id},process.env.JWT_SECRET_KEY,{expiresIn:"30d"});
 
-                    resp.send({"status":"success","message":" Login Successfully","token":token})
+                    resp.json({"status":"success","message":" Login Successfully","token":token})
                     
                 }else{
-                    resp.status(400).send({"status":"failed","message":"Email or Password is not valid"})
+                    resp.status(400).json({"status":"failed","message":"Email or Password is not valid"})
                 }
 
             }else{
-                resp.status(400).send({"status":"failed","message":"You are not a Register User "})
+                resp.status(400).json({"status":"failed","message":"You are not a Register User "})
             }
             
 
         }else{
-          resp.status(400).send({"status":"failed","message":"All fielde are required "})
+          resp.status(400).json({"status":"failed","message":"All fielde are required "})
         }
         
     } catch (error) {
         console.log(error);
-        resp.status(500).send({"status":"failed","message":"Unable to login"})
+        resp.status(500).json({"status":"failed","message":"Unable to login"})
     }
 
 
@@ -138,37 +141,96 @@ class userController {
 
 
 
- //TODO  Change User Password Function create
+ //TODO  Change User Password Function create        ( iske liye Old password required Nahin Hai )
+// static changeUserPassword = async(req,resp)=>{
+
+//       //* req user provide data
+//     const {password, password_confirmation} = req.body
+
+    
+//     if(password && password_confirmation){
+
+//         if(password !== password_confirmation){
+//            resp.status(400).send({"status":"failed","message":"New Password and Confirm New Password doesn't match"})
+//         }else{
+
+//             const salt = await bcrypt.genSalt(10)
+//             const newHashPassword = await bcrypt.hash(password,salt)   //* <-- Password hash code
+             
+//             //* Find User _id Database
+//              await UserModel.findByIdAndUpdate(req.user._id,{
+//               $set:{
+//                 password:newHashPassword
+//               }
+//             })
+
+            
+//             resp.send({"status":"success","message":" password changed Successfully"})
+
+//         }
+
+          
+//     }else{
+//        resp.status(400).send({"status":"failed","message":"All fielde are required "})
+//     }
+
+
+
+    
+// }
+
+
+
+
+
+
+
+
+  
+ //TODO  Change User Password Function create          ( iske liye Old password required Hai )
 static changeUserPassword = async(req,resp)=>{
 
       //* req user provide data
-    const {password, password_confirmation} = req.body
+    const {old_password,password, password_confirmation} = req.body
 
     
-    if(password && password_confirmation){
+    if(password && password_confirmation && old_password){
 
-        if(password !== password_confirmation){
-           resp.status(400).send({"status":"failed","message":"New Password and Confirm New Password doesn't match"})
+      const user = await UserModel.findOne({email:req.user.email});  //* <-- User Find Database code
+
+
+                               //*    old_password compare database user password
+      const isMatch = await bcrypt.compare(old_password,user.password);   //* Check Old password
+      
+      //* isMatch result --> True & false
+
+       if(isMatch){
+        
+       if(password !== password_confirmation){
+           resp.status(400).json({"status":"failed","message":"New Password and Confirm Password doesn't match"})
         }else{
 
             const salt = await bcrypt.genSalt(10)
             const newHashPassword = await bcrypt.hash(password,salt)   //* <-- Password hash code
              
-            //* Find User _id Database
+            //* Find User _id Database  
              await UserModel.findByIdAndUpdate(req.user._id,{
               $set:{
-                password:newHashPassword
+                password:newHashPassword       //* <-- User provide New Passsword Update code
               }
             })
 
             
-            resp.send({"status":"success","message":" password changed Successfully"})
+            resp.send({"status":"success","message":" Password Changed Successfully"})
 
+        }
+        }else{
+           resp.status(400).json({"status":"failed","message":"'Old Password does not matched'"})
         }
 
           
     }else{
-       resp.status(400).send({"status":"failed","message":"All fielde are required "})
+       resp.status(400).json({"status":"failed","message":"All fielde are required "})
     }
 
 
@@ -187,7 +249,7 @@ static changeUserPassword = async(req,resp)=>{
 
  //TODO User Data Get Function Create
 static loggedUser = async (req,resp)=>{
-    resp.send({'user':req.user})
+    resp.json({'user':req.user})
 }
   
   
@@ -227,14 +289,14 @@ static sendUserPasswordResetEmail = async (req,resp)=>{
         // })
          
          
-         resp.send({"status":"success","message":"Password Reset Email sent... Please Check Your ","token":link})
+         resp.json({"status":"success","message":"Password Reset Email sent... Please Check Your ","token":link})
 
         }else{
-            resp.status(400).send({"status":"failed","message":"Email doesn't exists"})
+            resp.status(400).json({"status":"failed","message":"Email doesn't exists"})
         }
         
     }else{
-        resp.status(401).send({"status":"failed","message":"Email Field is Required"})
+        resp.status(401).json({"status":"failed","message":"Email Field is Required"})
     }
 }
 
