@@ -359,6 +359,151 @@ static userPasswordReset = async(req, resp) => {
 
 
 
+  
+ //TODO  User NameUpdate Function create       
+static NameUpdate = async(req,resp)=>{
+
+  
+      //* req user provide data
+    const {name} = req.body
+
+    
+    if(name != null && name != ""){
+
+
+      try {
+             
+        //* Find User _id Database
+        await UserModel.findByIdAndUpdate(req.user._id,{
+          $set:{
+            name:name
+          }
+
+        })
+
+        resp.send({"status":"success","message":" Name Update Successfully"})
+  
+        } catch (error) {
+          console.log(error);
+          resp.status(500).json({"status":"failed","message":"Server error"})
+        }
+      
+      
+      
+       
+    }else{
+      resp.status(401).send({ "status": "failed", "message": "Name Field are Required" })
+
+    }
+
+    
+
+
+
+}
+
+
+
+
+
+
+
+
+
+ //TODO  User PhoneNumberUpdate Function create        
+static PhoneNumberUpdate = async(req,resp)=>{
+
+      //* req user provide data
+    const {phone} = req.body
+
+    if(phone == null && phone == ""){
+          resp.status(401).send({ "status": "failed", "message": "phone Field are Required" })
+    }else{
+      try {
+             
+        //* Find User _id Database
+        await UserModel.findByIdAndUpdate(req.user._id,{
+          $set:{
+            phone:Number.parseInt(phone)
+          }
+
+        })
+         resp.send({"status":"success","message":" Phone Number Update Successfully"})
+  
+          } catch (error) {
+            console.log(error);
+            resp.status(500).json({"status":"failed","message":"Server error"})
+          }
+    }
+
+    
+
+    
+}
+
+
+
+
+
+
+
+
+ //TODO User EmailUpdate Function create       
+static EmailUpdate = async(req,resp)=>{
+
+      //* req user provide data
+    const {email} = req.body
+
+
+     
+    if(email != null && email != ""){
+
+      const user = await UserModel.findOne({email: email})      //* <-- User Find Database
+
+       
+      if(user){
+        
+        resp.status(422).json({"status":"failed","message":"Email already exists"})
+       
+    
+      }else{
+
+        try {
+
+          //* Find User _id Database
+          await UserModel.findByIdAndUpdate(req.user._id,{
+            $set:{
+              email:email
+            }
+
+          })
+
+          resp.send({"status":"success","message":" Email Id Update Successfully"})
+    
+          } catch (error) {
+            console.log(error);
+            resp.status(500).json({"status":"failed","message":"Server error"})
+          }
+         
+      }
+
+      
+    }else{
+      resp.status(401).json({"status":"failed","message":"Email Field is Required"})
+    }
+
+   
+
+    
+}
+
+
+
+
+
+
+
+
 
 }
 
